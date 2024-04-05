@@ -9,6 +9,7 @@ This is a P8X32A/Propeller, P2X8C4M64P/Propeller 2 driver object for the TI ADC1
 ## Salient Features
 
 * SPI connection
+
 | Processor | Fsys      | FlexSpin backend | Effective bus speed |
 |-----------|-----------|------------------|---------------------|
 | P1        | 80MHz     | bytecode         | 14.6kHz             |
