@@ -26,16 +26,17 @@ P1/SPIN1:
 
 P2/SPIN2:
 * p2-spin-standard-library
+* signal.adc.common.spin2h (provided by the p2-spin-standard-library)
 
 
 ## Compiler Compatibility
 
 | Processor | Language | Compiler               | Backend      | Status                |
 |-----------|----------|------------------------|--------------|-----------------------|
-| P1        | SPIN1    | FlexSpin (6.9.1)       | Bytecode     | OK                    |
-| P1        | SPIN1    | FlexSpin (6.9.1)       | Native/PASM  | OK                    |
-| P2        | SPIN2    | FlexSpin (6.9.1)       | NuCode       | OK (Untested)         |
-| P2        | SPIN2    | FlexSpin (6.9.1)       | Native/PASM2 | OK (Untested)         |
+| P1        | SPIN1    | FlexSpin (6.9.4)       | Bytecode     | OK                    |
+| P1        | SPIN1    | FlexSpin (6.9.4)       | Native/PASM  | OK                    |
+| P2        | SPIN2    | FlexSpin (6.9.4)       | NuCode       | OK (Untested)         |
+| P2        | SPIN2    | FlexSpin (6.9.4)       | Native/PASM2 | OK (Untested)         |
 
 (other versions or toolchains not listed are __not supported__, and _may or may not_ work)
 

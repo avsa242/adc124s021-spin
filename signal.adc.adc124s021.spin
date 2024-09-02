@@ -4,7 +4,7 @@
     Description:    Driver for TI ADC124S021 Analog to Digital Converters 
     Author:         Jesse Burt
     Started:        Apr 3, 2024
-    Updated:        Apr 5, 2024
+    Updated:        Sep 2, 2024
     Copyright (c) 2024 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -24,6 +24,8 @@ CON
 #include "signal.adc.common.spinh"              ' pull in code common to all ADC drivers
 
 VAR
+
+    long _CS, _SCK, _MOSI, _MISO
 
     long _adc_ref
     long _adc_range, _adc_max
@@ -56,17 +58,19 @@ PUB startx(CS_PIN, SCK_PIN, MOSI_PIN, MISO_PIN): status
 '   Returns: cog ID+1 of parent cog, or 0 on failure
     if (    lookdown(CS_PIN: 0..31) and lookdown(SCK_PIN: 0..31) and ...
             lookdown(MOSI_PIN: 0..31) and lookdown(MISO_PIN: 0..31) )
-            outa[CS] := 1                       ' make sure CS starts high
-            dira[CS] := 1
-            outa[SCK] := 1                      ' clock idles high (SPI mode 3)
-            dira[SCK] := 1
-            outa[MOSI] := 0
-            dira[MOSI] := 1
-            dira[MISO] := 0
+        longmove(@_CS, @CS_PIN, 4)              ' copy pins to global vars
+        outa[_CS] := 1                          ' make sure CS starts high
+        dira[_CS] := 1
+        outa[_SCK] := 1                         ' clock idles high (SPI mode 3)
+        dira[_SCK] := 1
+        if ( ADC_CHANNELS > 1 )
+            outa[_MOSI] := 0
+            dira[_MOSI] := 1
+        dira[_MISO] := 0
 
-            _adc_range := (1 << ADC_BITS)
-            _adc_max := _adc_range-1
-            return (cogid+1)
+        _adc_range := (1 << ADC_BITS)
+        _adc_max := _adc_range-1
+        return (cogid+1)
     ' if this point is reached, something above failed
     ' Re-check I/O pin assignments, bus speed, connections, power
     ' Lastly - make sure you have at least one free core/cog
@@ -100,13 +104,14 @@ PUB adc_data(): wd | b, ch, sp
 '   Returns: ADC word (12bits)
     ch := (_ch << 11)                           ' ch cfg: %xx_ccc_xxx
 #ifdef __OUTPUT_ASM__
-    sp := ( (clkfreq/3_200_000) )               ' calc SCK period best-case
+    sp := ( (clkfreq/3_200_000) )               ' calc SCK period for 3.2MHz best-case
 #endif
     outa[CS] := 0
         repeat 2                                ' result is delayed 16 clocks; read twice
             repeat b from 15 to 0
                 outa[SCK] := 0
-                outa[MOSI] := ch.[b]            ' set the channel
+                if ( ADC_CHANNELS > 1 )
+                    outa[MOSI] := ch.[b]        ' set the channel
                 wd.[b] := ina[MISO]             ' read the conversion
                 outa[SCK] := 1
 #ifdef __OUTPUT_ASM__
@@ -134,8 +139,8 @@ PUB ref_voltage(): v
 
 PUB set_adc_channel(ch)
 ' Set ADC channel for subsequent reads
-'   Valid values: 0..3
-    _ch := 0 #> ch <# 3
+'   Valid values: 0..ADC_CHANNELS-1
+    _ch := 0 #> ch <# (ADC_CHANNELS-1)
 
 
 PUB set_ref_voltage(v): curr_v
